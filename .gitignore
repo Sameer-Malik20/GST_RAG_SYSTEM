@@ -1,0 +1,58 @@
+# ==============================================================================
+# GSTGPT - GIT IGNORE CONFIGURATION (.gitignore)
+# ==============================================================================
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Python Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+
+# Vector Database Index & Local Storage (ChromaDB)
+gstgpt_chromadb/
+*.chromadb
+
+# Heavy LLM Weight Files & Model Checkpoints
+*.gguf
+*.bin
+*.pt
+*.safetensors
+*.onnx
+gstgpt.gguf
+
+# Environment Variables & Secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# IDE & Editor Settings
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Temporary Diagnostic & Audit Report Logs
+rag_audit_*.json
+rag_diagnosis_report*.txt
+*.log
+
+# Jupyter Notebooks
+*.ipynb
+.ipynb_checkpoints/
+
+# Raw Data & Raw Document Folders
+notifications/
+orders/
+extracted_data/
+gstgpt_chromadb/

@@ -1,0 +1,37 @@
+"""
+==============================================================================
+GSTGPT - CONFIGURATION MODULE (config.py)
+==============================================================================
+[MVC ROLE: CONFIGURATION / SETTINGS]
+Is file ka kaam poore project ke saare PATHS, MODEL NAMES, aur RAG HYPERPARAMETERS
+ko ek hi jagah store karna hai. Isse agar future me koi path ya model change
+karna ho, toh sirf is file me update karna padega!
+==============================================================================
+"""
+
+import os
+from pathlib import Path
+
+# Project Root Directory
+BASE_DIR = Path(__file__).resolve().parent
+
+# Data Paths
+DATA_DIR = BASE_DIR / "extracted_data"
+INPUT_CLEANED_FILE = DATA_DIR / "jsonl" / "gst_ai_dataset_cleaned.jsonl"
+NOTIFICATIONS_DIR = BASE_DIR / "notifications"
+ORDERS_DIR = BASE_DIR / "orders"
+
+# Vector Database Settings (ChromaDB)
+CHROMA_DB_PATH = str(BASE_DIR / "gstgpt_chromadb")
+COLLECTION_NAME = "gst_notifications"
+
+# AI / ML Model Settings
+EMBEDDING_MODEL = "BAAI/bge-small-en-v1.5"
+RERANKER_MODEL = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+DEFAULT_OLLAMA_MODEL = "gstgpt:latest"
+
+# RAG Search Hyperparameters
+RAG_TOP_K = 3          # Final documents sent to LLM after re-ranking
+RAG_CANDIDATE_K = 15   # Initial candidates fetched by BM25 and Vector Search
+
+print(f"[CONFIG] Base Directory loaded: {BASE_DIR}")

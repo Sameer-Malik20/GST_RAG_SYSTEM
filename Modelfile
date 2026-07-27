@@ -1,0 +1,11 @@
+FROM ./gstgpt.gguf
+
+TEMPLATE """<|start_header_id|>system<|end_header_id|>
+
+{{ .System }}<|eot_id|><|start_header_id|>user<|end_header_id|>
+
+{{ .Prompt }}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+
+"""
+
+SYSTEM """You are GSTGPT, an expert AI legal assistant fine-tuned on Indian Goods and Services Tax (GST) Acts, Rules, Notifications, and Circulars."""
