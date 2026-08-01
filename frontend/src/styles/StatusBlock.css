@@ -1,0 +1,72 @@
+.status-block {
+  align-self: stretch;
+  margin: 10px 0;
+}
+
+.status-block.waiting {
+  margin: 14px;
+}
+
+.status-block.waiting.init {
+  margin: 17px 14px 14px;
+}
+
+.status-block.image-generating {
+  margin: 17px 14px 31px;
+}
+
+.status-block.remote-streaming {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin: 18px 0 24px;
+}
+
+.status-block-header {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  gap: 4px;
+  height: 18px;
+  font-weight: 600;
+  font-size: 14px;
+  color: rgb(100, 100, 100);
+  user-select: none;
+}
+
+.status-block-header.expandable {
+  cursor: pointer;
+}
+
+.status-spinner {
+  flex-shrink: 0;
+  margin-right: 6px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.status-label {
+  display: inline-block;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.status-chevron {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.status-label.animated {
+  will-change: opacity, transform;
+}
+
+.status-content {
+  padding: 4px 12px;
+  font-size: 14px;
+  color: rgb(100, 100, 100);
+  overflow: hidden;
+}
+
+.status-block.tool .status-content {
+  padding: 0 4px;
+}

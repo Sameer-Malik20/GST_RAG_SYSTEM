@@ -1,0 +1,21 @@
+{
+  "name": "gstgpt-server",
+  "version": "1.0.0",
+  "description": "Express.js MVC Backend with Authentication and Local MongoDB for GSTGPT",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.19.2",
+    "groq-sdk": "^1.5.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.3.1",
+    "node-fetch": "^2.7.0"
+  }
+}

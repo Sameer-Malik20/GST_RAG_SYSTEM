@@ -1,0 +1,687 @@
+import React, { useEffect, useLayoutEffect, useState, useRef, useContext, useMemo, useCallback } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { RiMenuLine } from "react-icons/ri";
+import { LuSearch, LuSquarePen, LuAudioLines, LuArrowUp, LuArrowDown, LuRefreshCw, LuUsers, LuLogOut } from "react-icons/lu";
+import { IoMdStar } from "react-icons/io";
+import { FaUserCircle } from "react-icons/fa";
+import { ConversationsContext } from "../contexts/ConversationsContext";
+import { motion, AnimatePresence } from "framer-motion";
+import Modal from "./Modal";
+import { useToast } from "../contexts/ToastContext";
+import SearchModal from "./SearchModal";
+import BrandLogo from "./BrandLogo";
+import "../styles/Sidebar.css";
+
+
+const itemVariants = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0, x: 40 }
+};
+
+const itemContentVariants = {
+  exit: { height: 0 }
+};
+
+const RenameInput = ({ initialValue, conversationId, handleRename, setRenamingConversationId }) => {
+  const [value, setValue] = useState(initialValue);
+  return (
+    <input
+      type="text"
+      className="rename-input"
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          handleRename(conversationId, value);
+        } else if (e.key === "Escape") {
+          setRenamingConversationId(null);
+        }
+      }}
+      enterKeyHint="done"
+      onBlur={() => {
+        if (value.trim()) {
+          handleRename(conversationId, value);
+        } else {
+          setRenamingConversationId(null);
+        }
+      }}
+      autoFocus
+    />
+  );
+};
+
+const ConversationItem = React.memo(({
+  conv,
+  isActive,
+  isSelected,
+  isRenaming,
+  handleRename,
+  setRenamingConversationId,
+  handleNavigate,
+  handleConversationContextMenu,
+  handleTouchStart,
+  handleTouchEnd,
+  handleTouchMove,
+  isTouch
+}) => {
+  return (
+    <motion.li
+      layout
+      variants={itemVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      transition={{ duration: 0.2, ease: "easeInOut" }}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        handleConversationContextMenu(e, conv.conversation_id);
+      }}
+      onTouchStart={(e) => handleTouchStart(e, conv.conversation_id)}
+      onTouchEnd={(e) => handleTouchEnd(e, conv.conversation_id)}
+      onTouchMove={handleTouchMove}
+      onTouchCancel={(e) => handleTouchEnd(e, conv.conversation_id)}
+    >
+      <motion.div
+        variants={itemContentVariants}
+        style={{ overflow: 'hidden' }}
+        transition={{ duration: 0.2, ease: "easeInOut" }}
+      >
+        <div
+          className={`conversation-item ${isActive ? "active-conversation" : ""} ${isSelected ? "selected" : ""}`}
+          onClick={!isTouch ? () => {
+            if (!isRenaming) {
+              handleNavigate(conv.conversation_id);
+            }
+          } : undefined}
+        >
+          {isRenaming ? (
+            <RenameInput
+              initialValue={conv.alias}
+              conversationId={conv.conversation_id}
+              handleRename={handleRename}
+              setRenamingConversationId={setRenamingConversationId}
+            />
+          ) : (
+            <>
+              {conv.isLoading ? (
+                <span key="loading" className="loading-text">
+                  Loading...
+                </span>
+              ) : (
+                <span key="alias" className="conversation-text">
+                  {conv.alias}
+                </span>
+              )}
+            </>
+          )}
+          {conv.starred && (
+            <span className="star-icon">
+              <IoMdStar />
+            </span>
+          )}
+        </div>
+      </motion.div>
+    </motion.li>
+  );
+});
+
+function Sidebar({
+  isSidebarOpen,
+  toggleSidebar,
+  isResponsive,
+  isTouch,
+  userInfo,
+  setAlias,
+}) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [isDropdown, setIsDropdown] = useState(false);
+  const [modalMessage, setModalMessage] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [modalAction, setModalAction] = useState(null);
+  const [selectedConversationId, setSelectedConversationId] = useState(null);
+  const [renamingConversationId, setRenamingConversationId] = useState(null);
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
+  const { showToast } = useToast();
+  const [isActiveVisible, setIsActiveVisible] = useState(true);
+  const [activeDirection, setActiveDirection] = useState('down');
+
+  const [contextMenu, setContextMenu] = useState({
+    visible: false,
+    x: 0,
+    y: 0,
+  });
+  const containerRef = useRef(null);
+  const userContainerRef = useRef(null);
+  const longPressTimer = useRef(null);
+  const contextMenuProtected = useRef(false);
+  const contextMenuVisibleRef = useRef(false);
+  const renamingIdRef = useRef(null);
+  const conversationsRef = useRef([]);
+
+  useLayoutEffect(() => {
+    contextMenuVisibleRef.current = contextMenu.visible;
+  }, [contextMenu.visible]);
+
+  const {
+    conversations,
+    deleteConversation,
+    updateAlias,
+    toggleStarConversation
+  } = useContext(ConversationsContext);
+
+  useLayoutEffect(() => {
+    conversationsRef.current = conversations;
+  }, [conversations]);
+
+  const sortedConversations = useMemo(() => {
+    return [...conversations].sort((a, b) => {
+      if (a.starred && !b.starred) return -1;
+      if (!a.starred && b.starred) return 1;
+
+      if (a.starred && b.starred) {
+        if (!a.starred_at) return 1;
+        if (!b.starred_at) return -1;
+        return new Date(b.starred_at) - new Date(a.starred_at);
+      }
+
+      const timeA = a.updated_at ? new Date(a.updated_at) : new Date(a.created_at);
+      const timeB = b.updated_at ? new Date(b.updated_at) : new Date(b.created_at);
+      return timeB - timeA;
+    });
+  }, [conversations]);
+
+  const handleNavigate = useCallback((conversation_id) => {
+    const conv = conversationsRef.current.find(
+      (c) => c.conversation_id === conversation_id
+    );
+    if (!conv) {
+      showToast("Conversation does not exist.");
+      return;
+    }
+    const targetPath = conv.type === 'image' ? `/image/${conversation_id}` : `/chat/${conversation_id}`;
+    navigate(targetPath);
+    if (isResponsive) toggleSidebar();
+  }, [navigate, isResponsive, toggleSidebar, showToast]);
+
+  const toggleStar = useCallback(async (conversation_id, e) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    try {
+      const conversation = conversations.find(c => c.conversation_id === conversation_id);
+      if (!conversation) return;
+
+      toggleStarConversation(conversation_id, !conversation.starred);
+
+      const token = localStorage.getItem("samrag_auth_token");
+      const headers = {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      };
+
+      const res = await fetch(`${process.env.REACT_APP_FASTAPI_URL}/conversation/${conversation_id}/star`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers,
+        body: JSON.stringify({ starred: !conversation.starred })
+      });
+      if (res.status === 401 && !window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
+        window.location.href = '/login?expired=true';
+      }
+      if (!res.ok) {
+        throw new Error('Failed to toggle star.');
+      }
+    } catch (error) {
+      showToast("Failed to toggle star.");
+      const conversation = conversations.find(c => c.conversation_id === conversation_id);
+      if (conversation) {
+        toggleStarConversation(conversation_id, conversation.starred);
+      }
+    }
+  }, [conversations, toggleStarConversation, showToast]);
+
+  const handleTouchStart = useCallback((e, conversation_id) => {
+    setContextMenu(prev => ({ ...prev, visible: false }));
+
+    longPressTimer.current = setTimeout(() => {
+      setSelectedConversationId(conversation_id);
+      setContextMenu({
+        visible: true,
+        x: e.touches[0].pageX,
+        y: e.touches[0].pageY,
+      });
+
+      if (navigator.vibrate) {
+        navigator.vibrate(100);
+      }
+
+      contextMenuProtected.current = true;
+      setTimeout(() => {
+        contextMenuProtected.current = false;
+      }, 500);
+
+      const preventDefaultOnce = (evt) => {
+        evt.preventDefault();
+        document.removeEventListener('contextmenu', preventDefaultOnce);
+      };
+      document.addEventListener('contextmenu', preventDefaultOnce);
+    }, 500);
+  }, []);
+
+  const handleTouchEnd = useCallback((e, conversation_id) => {
+    if (contextMenuVisibleRef.current) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+
+      if (renamingIdRef.current !== conversation_id) {
+        handleNavigate(conversation_id);
+      }
+    }
+  }, [handleNavigate]);
+
+  const handleTouchMove = useCallback((e) => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  }, []);
+
+  const match = location.pathname.match(/^\/(?:chat|image)\/([^/]+)/);
+  const currentConversationId = match ? match[1] : null;
+
+  const currentConversationIdRef = useRef(currentConversationId);
+  useLayoutEffect(() => {
+    currentConversationIdRef.current = currentConversationId;
+    renamingIdRef.current = renamingConversationId;
+  }, [currentConversationId, renamingConversationId]);
+
+  const handleRename = useCallback(async (conversation_id, newAlias) => {
+    try {
+      updateAlias(conversation_id, newAlias);
+      setRenamingConversationId(null);
+
+      if (conversation_id === currentConversationIdRef.current) {
+        setAlias(newAlias);
+      }
+
+      const token = localStorage.getItem("samrag_auth_token");
+      const headers = {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      };
+
+      const res = await fetch(`${process.env.REACT_APP_FASTAPI_URL}/conversation/${conversation_id}/rename`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers,
+        body: JSON.stringify({ alias: newAlias })
+      });
+      if (res.status === 401 && !window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
+        window.location.href = '/login?expired=true';
+      }
+      if (!res.ok) {
+        throw new Error('Failed to rename conversation.');
+      }
+    } catch (error) {
+      console.error("Failed to rename conversation.", error);
+      showToast("Failed to rename conversation.");
+    }
+  }, [updateAlias, setAlias, showToast]);
+
+  const handleDelete = useCallback(async (conversation_id) => {
+    try {
+      deleteConversation(conversation_id);
+      if (currentConversationId === conversation_id)
+        navigate("/");
+
+      const token = localStorage.getItem("samrag_auth_token");
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+      const res = await fetch(`${process.env.REACT_APP_FASTAPI_URL}/conversation/${conversation_id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+        headers
+      });
+      if (res.status === 401 && !window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
+        window.location.href = '/login?expired=true';
+      }
+      if (!res.ok) {
+        throw new Error('Failed to delete conversation.');
+      }
+    } catch (error) {
+      console.error("Failed to delete conversation.", error);
+      showToast("Failed to delete conversation.");
+    }
+  }, [deleteConversation, currentConversationId, navigate, showToast]);
+
+  const handleRefresh = useCallback(() => {
+    window.location.reload();
+  }, []);
+
+  const handleAdminClick = useCallback(() => {
+    navigate("/admin");
+    setIsDropdown(false);
+    if (isResponsive) toggleSidebar();
+  }, [navigate, isResponsive, toggleSidebar]);
+
+  const handleLogoutClick = useCallback(() => {
+    setModalMessage("Are you sure you want to log out?");
+    setModalAction("logout");
+    setShowModal(true);
+  }, []);
+
+  const confirmDelete = useCallback(async () => {
+    if (modalAction === "logout") {
+      try {
+        {
+          const res = await fetch(`${process.env.REACT_APP_FASTAPI_URL}/logout`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+          });
+          if (res.status === 401 && !window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
+            window.location.href = '/login?expired=true';
+          }
+          if (!res.ok) {
+            let detail = null;
+            try { detail = (await res.json())?.detail; } catch { }
+            throw new Error(detail || 'An unknown error occurred.');
+          }
+        }
+        localStorage.removeItem("samrag_auth_token");
+        localStorage.removeItem("samrag_user");
+        window.location.href = '/login';
+      } catch (error) {
+        const detail = error.response?.data?.detail;
+        showToast(
+          !Array.isArray(detail) && detail
+            ? detail
+            : "An unknown error occurred."
+        );
+      }
+    }
+    setShowModal(false);
+    setModalAction(null);
+  }, [modalAction, showToast]);
+
+  const cancelDelete = useCallback(() => {
+    setShowModal(false);
+    setModalAction(null);
+  }, []);
+
+  const handleScrollToActive = useCallback(() => {
+    const activeEl = containerRef.current?.querySelector('.active-conversation');
+    activeEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, []);
+
+  const handleNewConversation = useCallback(() => {
+    navigate("/");
+    if (isResponsive) toggleSidebar();
+  }, [navigate, isResponsive, toggleSidebar]);
+
+  const handleRealtimeConversation = useCallback(() => {
+    navigate("/realtime");
+    if (isResponsive) toggleSidebar();
+  }, [navigate, isResponsive, toggleSidebar]);
+
+
+  const handleConversationContextMenu = useCallback((e, conversation_id) => {
+    e.preventDefault();
+    if (renamingIdRef.current !== null) return;
+
+    setSelectedConversationId(conversation_id);
+    setContextMenu({
+      visible: true,
+      x: e.pageX,
+      y: e.pageY,
+    });
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutsideContextMenu = () => {
+      if (contextMenuVisibleRef.current && !contextMenuProtected.current) {
+        setContextMenu(prev => ({ ...prev, visible: false }));
+        setSelectedConversationId(null);
+      }
+    };
+    document.addEventListener("click", handleClickOutsideContextMenu);
+    return () =>
+      document.removeEventListener("click", handleClickOutsideContextMenu);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutsideDropdown = (e) => {
+      if (
+        userContainerRef.current &&
+        !userContainerRef.current.contains(e.target)
+      ) {
+        setIsDropdown(false);
+      }
+    };
+    if (isDropdown) {
+      document.addEventListener("click", handleClickOutsideDropdown);
+    }
+    return () => {
+      document.removeEventListener("click", handleClickOutsideDropdown);
+    };
+  }, [isDropdown]);
+
+  useLayoutEffect(() => {
+    if (!isSidebarOpen) setIsSearchVisible(false);
+  }, [isSidebarOpen]);
+
+  useEffect(() => {
+    if (!currentConversationId || !containerRef.current) {
+      setIsActiveVisible(true);
+      return;
+    }
+    const activeEl = containerRef.current.querySelector('.active-conversation');
+    if (!activeEl) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsActiveVisible(entry.isIntersecting);
+        if (!entry.isIntersecting) {
+          const rect = entry.boundingClientRect;
+          const containerRect = containerRef.current.getBoundingClientRect();
+          setActiveDirection(rect.top < containerRect.top ? 'up' : 'down');
+        }
+      },
+      { root: containerRef.current, threshold: 0.5 }
+    );
+    observer.observe(activeEl);
+    return () => observer.disconnect();
+  }, [currentConversationId, sortedConversations]);
+
+  const handleCustomAction = useCallback((action) => {
+    if (action === "star") {
+      if (selectedConversationId) {
+        const conv = conversations.find(
+          (c) => c.conversation_id === selectedConversationId
+        );
+        if (conv) {
+          toggleStar(conv.conversation_id, { stopPropagation: () => { } });
+        }
+      }
+    } else if (action === "rename") {
+      if (selectedConversationId) {
+        setRenamingConversationId(selectedConversationId);
+      }
+    } else if (action === "delete") {
+      if (selectedConversationId) {
+        handleDelete(selectedConversationId);
+      }
+    }
+    setContextMenu(prev => ({ ...prev, visible: false }));
+    setSelectedConversationId(null);
+  }, [selectedConversationId, conversations, toggleStar, handleDelete]);
+
+  const toggleSearch = useCallback(() => {
+    setIsSearchVisible(prev => !prev);
+  }, []);
+
+  return (
+    <>
+      <div className="sidebar">
+        <div className="header sidebar-header">
+          <div className="header-left">
+            <div className="logo">
+              <BrandLogo size="medium" />
+            </div>
+          </div>
+          <div className="header-right">
+            <div className="header-icon">
+              <RiMenuLine onClick={toggleSidebar} />
+            </div>
+          </div>
+        </div>
+
+        <div className="newtask-container">
+          <div className="new-task search" onClick={toggleSearch}>
+            <LuSearch />
+            Search
+          </div>
+          <div className="new-task" onClick={handleNewConversation}>
+            <LuSquarePen />
+            New Chat
+          </div>
+          <div className="new-task" onClick={handleRealtimeConversation}>
+            <LuAudioLines />
+            Voice Chat
+          </div>
+        </div>
+
+        <div className="conversation-list-wrapper">
+          <div className="conversation-container" ref={containerRef}>
+            <div className="conversation-header">
+              Chat History
+            </div>
+            <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+              {sortedConversations.length > 0 ? (
+                <AnimatePresence initial={false}>
+                  {sortedConversations.map((conv) => (
+                    <ConversationItem
+                      key={conv.conversation_id}
+                      conv={conv}
+                      isActive={currentConversationId === conv.conversation_id}
+                      isSelected={selectedConversationId === conv.conversation_id}
+                      isRenaming={renamingConversationId === conv.conversation_id}
+                      handleRename={handleRename}
+                      setRenamingConversationId={setRenamingConversationId}
+                      handleNavigate={handleNavigate}
+                      handleConversationContextMenu={handleConversationContextMenu}
+                      handleTouchStart={handleTouchStart}
+                      handleTouchEnd={handleTouchEnd}
+                      handleTouchMove={handleTouchMove}
+                      isTouch={isTouch}
+                    />
+                  ))}
+                </AnimatePresence>
+              ) : (
+                <div className="no-result">
+                  {conversations.length === 0 ? "No chat history available." : "No search results found."}
+                </div>
+              )}
+            </div>
+          </div>
+          {currentConversationId && (
+            <button
+              className={`scroll-to-active-btn ${!isActiveVisible ? 'visible' : ''}`}
+              onClick={handleScrollToActive}
+            >
+              {activeDirection === 'up' ? <LuArrowUp /> : <LuArrowDown />}
+            </button>
+          )}
+        </div>
+
+        <div className="user-container" ref={userContainerRef}>
+          <div className={`user-info${isDropdown ? ' active' : ''}`} onClick={() => setIsDropdown(!isDropdown)}>
+            <FaUserCircle className="user-icon" />
+            <div className="user-text">
+              <div className="user-name">{userInfo?.name}</div>
+            </div>
+          </div>
+
+          <AnimatePresence>
+            {isDropdown && (
+              <motion.div
+                className="user-dropdown"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+              >
+                <div className="dropdown-menu">
+                  <div onClick={handleRefresh} className="dropdown-item">
+                    <LuRefreshCw className="dropdown-item-icon" />
+                    Refresh Page
+                  </div>
+                  {userInfo?.admin && (
+                    <div onClick={handleAdminClick} className="dropdown-item">
+                      <LuUsers className="dropdown-item-icon" />
+                      User Management
+                    </div>
+                  )}
+                  <div onClick={handleLogoutClick} className="dropdown-item logout">
+                    <LuLogOut className="dropdown-item-icon" />
+                    Log Out
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      <SearchModal
+        isVisible={isSearchVisible}
+        onClose={toggleSearch}
+        sortedConversations={sortedConversations}
+        onSelectConversation={handleNavigate}
+      />
+
+      <div
+        className={`context-menu ${contextMenu.visible ? "visible" : ""}`}
+        style={{
+          position: "absolute",
+          top: contextMenu.y,
+          left: contextMenu.x,
+        }}
+      >
+        <ul>
+          {selectedConversationId && (
+            <>
+              {conversations.find(c => c.conversation_id === selectedConversationId)?.starred ? (
+                <li onClick={() => handleCustomAction("star")}>Unstar</li>
+              ) : (
+                <li onClick={() => handleCustomAction("star")}>Star</li>
+              )}
+              <li onClick={() => handleCustomAction("rename")}>Rename</li>
+              <li onClick={() => handleCustomAction("delete")}>Delete</li>
+            </>
+          )}
+        </ul>
+      </div>
+
+      <AnimatePresence>
+        {showModal && (
+          <Modal
+            message={modalMessage}
+            onConfirm={confirmDelete}
+            onCancel={cancelDelete}
+            showCancelButton={modalAction !== "notify"}
+          />
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
+
+export default React.memo(Sidebar);

@@ -1,0 +1,82 @@
+.thinking-dropdown-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.thinking-trigger-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ececec;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.thinking-trigger-btn:hover,
+.thinking-trigger-btn.active {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.thinking-icon {
+  font-size: 15px;
+}
+
+.thinking-dropdown-menu {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  margin-bottom: 8px;
+  background: #202123;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 6px;
+  width: 220px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  z-index: 100;
+}
+
+.thinking-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.thinking-option:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.thinking-option.selected {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.thinking-option-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.thinking-option-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.thinking-option-desc {
+  font-size: 11px;
+  color: #8e8ea0;
+  margin-top: 2px;
+}
+
+.check-icon {
+  font-size: 14px;
+  color: #10a37f;
+}

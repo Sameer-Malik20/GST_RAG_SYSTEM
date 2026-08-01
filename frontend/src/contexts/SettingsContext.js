@@ -1,0 +1,337 @@
+import React, { createContext, useState, useEffect, useMemo, useCallback } from "react";
+ 
+export const SettingsContext = createContext();
+
+const INIT_VALUES = {
+  memory: 2,
+  instructions: "",
+  isReasoning: true,
+  isSearch: true,
+  isResearch: false
+};
+
+export const SettingsProvider = ({ children }) => {
+  const [model, setModel] = useState("");
+  const [imageModel, setImageModel] = useState("");
+  const [realtimeModel, setRealtimeModel] = useState("");
+  const [models, setModels] = useState([]);
+  const [imageModels, setImageModels] = useState([]);
+  const [realtimeModels, setRealtimeModels] = useState([]);
+  const [isModelReady, setIsModelReady] = useState(false);
+  const [alias, setAlias] = useState("");
+  const [reason, setReason] = useState("");
+  const [verbosity, setVerbosity] = useState("");
+  const [defaultModel, setDefaultModel] = useState("");
+  const [defaultImageModel, setDefaultImageModel] = useState("");
+  const [visionDefaultModel, setVisionDefaultModel] = useState("");
+  const [visionDefaultImageModel, setVisionDefaultImageModel] = useState("");
+  const [memory, setMemory] = useState(INIT_VALUES.memory);
+  const [instructions, setInstructions] = useState(INIT_VALUES.instructions);
+  const [isReasoning, setIsReasoning] = useState(true);
+  const [isSearch, setIsSearch] = useState(true);
+  const [isResearch, setIsResearch] = useState(false);
+  const [isDAN, setIsDAN] = useState(false);
+  const [hasImage, setHasImage] = useState(false); // Has Image in Chat
+  const [mcpList, setMCPList] = useState([]);
+  const [canControlReason, setCanControlReason] = useState(false);
+  const [canControlVerbosity, setCanControlVerbosity] = useState(false);
+  const [canControlSystemMessage, setCanControlSystemMessage] = useState(false);
+  const [canVision, setCanVision] = useState(false);
+  const [canVisionImage, setCanVisionImage] = useState(false);
+  const [canToggleReasoning, setCanToggleReasoning] = useState(false);
+  const [canToggleSearch, setCanToggleSearch] = useState(false);
+  const [canToggleResearch, setCanToggleResearch] = useState(false);
+  const [canToggleMCP, setCanToggleMCP] = useState(false);
+  const [maxImageInput, setMaxImageInput] = useState(1);
+
+  const applyModelSelection = (selectedModel, modelConfig = {}) => {
+    if (!selectedModel) return;
+
+    const reasonControl = selectedModel?.controls?.reason;
+    const reasonLevels = reasonControl?.levels ?? [];
+    const reasonDefault = reasonControl?.default ?? "";
+    const verbosityControl = selectedModel?.controls?.verbosity;
+    const verbosityLevels = verbosityControl?.levels ?? [];
+    const verbosityDefault = verbosityControl?.default ?? "";
+    const canUseInstructions = Boolean(selectedModel?.controls?.instructions);
+    const reasoningCapability = selectedModel?.capabilities?.reasoning;
+    const searchCapability = selectedModel?.capabilities?.web_search;
+    const researchCapability = selectedModel?.capabilities?.research;
+    const visionCapability = selectedModel?.capabilities?.vision;
+    const mcpCapability = selectedModel?.capabilities?.mcp;
+
+    const canToggleReasoning = reasoningCapability === "toggle" || reasoningCapability === "switch";
+    const canToggleSearch = searchCapability === "toggle" || searchCapability === "switch";
+    const canToggleResearch = researchCapability === "toggle" || researchCapability === "switch";
+
+    const nextIsReasoning = canToggleReasoning
+      ? modelConfig.isReasoning ?? true
+      : Boolean(reasoningCapability);
+    const nextIsSearch = canToggleSearch
+      ? modelConfig.isSearch ?? isSearch
+      : Boolean(searchCapability);
+    const nextIsResearch = canToggleResearch
+      ? modelConfig.isResearch ?? isResearch
+      : Boolean(researchCapability);
+
+    setModel(selectedModel.model_name);
+    setCanToggleReasoning(canToggleReasoning);
+    setIsReasoning(nextIsReasoning);
+    setCanToggleSearch(canToggleSearch);
+    setIsSearch(nextIsSearch);
+    setCanToggleResearch(canToggleResearch);
+    setIsResearch(nextIsResearch);
+
+    setCanControlReason(reasonLevels.length > 0 && nextIsReasoning === true);
+    setCanControlVerbosity(verbosityLevels.length > 0);
+
+    if (reasonLevels.length > 0) {
+      setReason(reasonDefault);
+    }
+    if (verbosityLevels.length > 0) {
+      setVerbosity(verbosityDefault);
+    }
+    setCanControlSystemMessage(canUseInstructions);
+    if (!canUseInstructions) setIsDAN(false);
+
+    setCanVision(visionCapability === true || visionCapability === "switch");
+    setCanToggleMCP(Boolean(mcpCapability));
+    setMCPList(mcpCapability ? mcpList : []);
+  };
+
+  const applyImageModelSelection = (selectedImageModel) => {
+    if (!selectedImageModel) return;
+
+    const vision = selectedImageModel?.capabilities?.vision;
+    const maxInput = selectedImageModel?.capabilities?.max_input;
+
+    setImageModel(selectedImageModel.model_name);
+    setCanVisionImage(vision === "switch" || vision === true);
+    setMaxImageInput(maxInput);
+  };
+
+  const updateModel = (newModel, modelConfig = {}) => {
+    const selectedModel = models.find(m => m.model_name === newModel);
+    applyModelSelection(selectedModel, modelConfig);
+  };
+
+  const toggleReasoning = () => {
+    const selectedModel = models.find(m => m.model_name === model);
+    const reasoning = selectedModel?.capabilities?.reasoning;
+    const reasonLevels = selectedModel?.controls?.reason?.levels ?? [];
+
+    const nextIsReasoning = !isReasoning;
+
+    if (reasoning === "switch") {
+      const variants = selectedModel?.variants;
+      const targetModel = nextIsReasoning ? variants?.reasoning : variants?.base;
+      if (targetModel) {
+        updateModel(
+          targetModel,
+          {
+            isReasoning: nextIsReasoning,
+            isSearch,
+            isResearch
+          }
+        );
+        return;
+      }
+    }
+
+    setIsReasoning(nextIsReasoning);
+
+    setCanControlReason(reasonLevels.length > 0 && nextIsReasoning === true);
+  };
+
+  const toggleSearch = () => {
+    const selectedModel = models.find(m => m.model_name === model);
+    const search = selectedModel?.capabilities?.web_search;
+    const nextIsSearch = !isSearch;
+    
+    if (search === "switch") {
+      const variants = selectedModel?.variants;
+      const targetModel = isSearch ? variants?.base : variants?.web_search;
+      if (targetModel) {
+        updateModel(targetModel, {
+          isReasoning,
+          isSearch: nextIsSearch,
+          isResearch
+        });
+        return;
+      }
+    }
+    
+    setIsSearch(nextIsSearch);
+  };
+
+  const toggleResearch = () => {
+    const selectedModel = models.find(m => m.model_name === model);
+    const research = selectedModel?.capabilities?.research;
+    const nextIsResearch = !isResearch;
+    
+    if (research === "switch") {
+      const variants = selectedModel?.variants;
+      const targetModel = isResearch ? variants?.base : variants?.research;
+      if (targetModel) {
+        updateModel(targetModel, {
+          isReasoning,
+          isSearch,
+          isResearch: nextIsResearch
+        });
+        return;
+      }
+    }
+    
+    setIsResearch(nextIsResearch);
+  };
+
+  const updateImageModel = (newImageModel) => {
+    const selectedImageModel = imageModels.find(m => m.model_name === newImageModel);
+    applyImageModelSelection(selectedImageModel);
+  };
+
+  const updateRealtimeModel = useCallback((newRealtimeModel) => {
+    setRealtimeModel(newRealtimeModel);
+  }, []);
+
+  const resetSettings = () => {
+    if (defaultModel) {
+      updateModel(defaultModel, INIT_VALUES);
+      const selectedDefaultModel = models.find(m => m.model_name === defaultModel);
+      setReason(selectedDefaultModel?.controls?.reason?.default ?? "");
+      setVerbosity(selectedDefaultModel?.controls?.verbosity?.default ?? "");
+    }
+
+    if (defaultImageModel) {
+      updateImageModel(defaultImageModel);
+    }
+
+    setMemory(INIT_VALUES.memory);
+    setInstructions(INIT_VALUES.instructions);
+    setIsDAN(false);
+    setHasImage(false);
+    setMCPList([]);
+  };
+
+  useEffect(() => {
+    const fetchModels = async () => {
+      try {
+        const [modelsRes, imageModelsRes, realtimeModelsRes] = await Promise.all([
+          fetch(`${process.env.REACT_APP_FASTAPI_URL}/chat_models`, { credentials: "include" }),
+          fetch(`${process.env.REACT_APP_FASTAPI_URL}/image_models`, { credentials: "include" }),
+          fetch(`${process.env.REACT_APP_FASTAPI_URL}/realtime_models`, { credentials: "include" })
+        ]);
+        if (!modelsRes.ok || !imageModelsRes.ok || !realtimeModelsRes.ok) {
+          setModels([]);
+          setImageModels([]);
+          setRealtimeModels([]);
+          return;
+        }
+
+        const modelsData = await modelsRes.json();
+        const imageModelsData = await imageModelsRes.json();
+        const realtimeModelsData = await realtimeModelsRes.json();
+
+        setModels(modelsData?.models);
+        setImageModels(imageModelsData?.models);
+        setRealtimeModels(realtimeModelsData?.models);
+        setDefaultModel(modelsData.default);
+        setDefaultImageModel(imageModelsData.default);
+        setVisionDefaultModel(modelsData.vision_default);
+        setVisionDefaultImageModel(imageModelsData.vision_default);
+
+        const selectedDefaultModel = modelsData?.models?.find(m => m.model_name === modelsData.default);
+        const selectedDefaultImageModel = imageModelsData?.models?.find(m => m.model_name === imageModelsData.default);
+
+        applyModelSelection(selectedDefaultModel);
+        applyImageModelSelection(selectedDefaultImageModel);
+        updateRealtimeModel(realtimeModelsData.default);
+      } catch (error) {
+        setModels([]);
+        setImageModels([]);
+        setRealtimeModels([]);
+      } finally {
+        setIsModelReady(true);
+      }
+    };
+
+    fetchModels();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const switchImageMode = (hasUploadedImages) => {
+    const selectedImageModel = imageModels.find(m => m.model_name === imageModel);
+    const vision = selectedImageModel?.capabilities?.vision;
+    
+    if (vision === "switch") {
+      const variants = selectedImageModel?.variants;
+      if (hasUploadedImages) {
+        const targetModel = variants?.vision;
+        if (targetModel) {
+          updateImageModel(targetModel);
+        }
+      } else {
+        const targetModel = variants?.base;
+        if (targetModel) {
+          updateImageModel(targetModel);
+        }
+      }
+    }
+  };
+
+  const value = useMemo(() => ({
+    models,
+    imageModels,
+    realtimeModels,
+    model,
+    imageModel,
+    realtimeModel,
+    isModelReady,
+    alias,
+    reason,
+    verbosity,
+    memory,
+    instructions,
+    hasImage,
+    isReasoning,
+    isSearch,
+    isResearch,
+    isDAN,
+    mcpList,
+    canControlReason,
+    canControlVerbosity,
+    canControlSystemMessage,
+    canToggleReasoning,
+    canToggleSearch,
+    canToggleResearch,
+    canToggleMCP,
+    canVision,
+    canVisionImage,
+    maxImageInput,
+    visionDefaultModel,
+    visionDefaultImageModel,
+    updateModel,
+    updateImageModel,
+    updateRealtimeModel,
+    setAlias,
+    setReason,
+    setVerbosity,
+    setMemory,
+    setInstructions,
+    setHasImage,
+    setIsDAN,
+    setMCPList,
+    toggleReasoning,
+    toggleSearch,
+    toggleResearch,
+    switchImageMode,
+    resetSettings
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [models, imageModels, realtimeModels, model, imageModel, realtimeModel, isModelReady, alias, reason, verbosity, memory, instructions, hasImage, isReasoning, isSearch, isResearch, isDAN, mcpList, canControlReason, canControlVerbosity, canControlSystemMessage, canToggleReasoning, canToggleSearch, canToggleResearch, canToggleMCP, canVision, canVisionImage, maxImageInput, visionDefaultModel, visionDefaultImageModel]);
+
+  return (
+    <SettingsContext.Provider value={value}>
+      {children}
+    </SettingsContext.Provider>
+  );
+};

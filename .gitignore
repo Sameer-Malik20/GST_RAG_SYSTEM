@@ -15,8 +15,17 @@ env/
 env.bak/
 venv.bak/
 
+# Node.js & React Dependencies & Builds
+node_modules/
+frontend/node_modules/
+server/node_modules/
+frontend/build/
+dist/
+.next/
+
 # Vector Database Index & Local Storage (ChromaDB)
 gstgpt_chromadb/
+chroma_db/
 *.chromadb
 
 # Heavy LLM Weight Files & Model Checkpoints
@@ -34,9 +43,13 @@ gstgpt.gguf
 *.pem
 *.key
 
-# IDE & Editor Settings
+# IDE, Agent & Tool Configurations
 .vscode/
 .idea/
+.cursor/
+.agents/
+.jetro/
+.mcp.json
 *.swp
 *.swo
 *~
@@ -51,8 +64,10 @@ rag_diagnosis_report*.txt
 *.ipynb
 .ipynb_checkpoints/
 
-# Raw Data & Raw Document Folders
+# Raw Data, Processed Datasets & Fine-Tuning Artifacts
 notifications/
 orders/
 extracted_data/
-gstgpt_chromadb/
+processed_data/
+TaxoBuggyDataJson/
+fine_tune_test_model/

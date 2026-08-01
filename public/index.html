@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GSTGPT - Advanced Legal RAG AI Assistant</title>
+  
+  <!-- Modern Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Marked Markdown Parser -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <style>
+    :root {
+      --bg-dark: #090d16;
+      --bg-surface: #111827;
+      --bg-card: #1f293d;
+      --bg-card-hover: #28354e;
+      --accent-primary: #38bdf8;
+      --accent-gradient: linear-gradient(135deg, #38bdf8 0%, #6366f1 100%);
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --glass-bg: rgba(17, 24, 39, 0.75);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Sidebar Styling */
+    .sidebar {
+      width: 280px;
+      background-color: var(--bg-surface);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      padding: 18px;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 6px 8px;
+    }
+
+    .brand-logo {
+      width: 38px;
+      height: 38px;
+      background: var(--accent-gradient);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: white;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+    }
+
+    .brand-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-badge {
+      font-size: 10px;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent-primary);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    .btn-new-chat {
+      background: var(--accent-gradient);
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 10px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.25);
+    }
+
+    .btn-new-chat:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(56, 189, 248, 0.4);
+    }
+
+    .stats-card {
+      background-color: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .stats-icon {
+      color: #34d399;
+      font-size: 18px;
+    }
+
+    .stats-info div:first-child {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .stats-info div:last-child {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .history-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 8px;
+    }
+
+    .history-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .history-item {
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: background 0.15s;
+    }
+
+    .history-item:hover, .history-item.active {
+      background-color: var(--bg-card);
+      color: var(--text-main);
+    }
+
+    .history-item.active {
+      border-left: 3px solid var(--accent-primary);
+    }
+
+    /* Main Chat Container */
+    .chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      position: relative;
+    }
+
+    .chat-header {
+      height: 64px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      z-index: 10;
+    }
+
+    .header-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-info h2 {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background-color: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #10b981;
+    }
+
+    /* Welcome / Empty State */
+    .welcome-screen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .welcome-icon {
+      width: 64px;
+      height: 64px;
+      background: var(--accent-gradient);
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      color: white;
+      margin-bottom: 20px;
+      box-shadow: 0 0 25px rgba(56, 189, 248, 0.4);
+    }
+
+    .welcome-screen h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .welcome-screen p {
+      color: var(--text-muted);
+      margin-bottom: 32px;
+      font-size: 15px;
+    }
+
+    .suggestion-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      width: 100%;
+    }
+
+    .suggestion-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .suggestion-card:hover {
+      background-color: var(--bg-card-hover);
+      border-color: rgba(56, 189, 248, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .suggestion-card .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent-primary);
+      margin-bottom: 4px;
+    }
+
+    .suggestion-card .card-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* Messages Stream */
+    .messages-stream {
+      flex: 1;
+      overflow-y: auto;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .message {
+      display: flex;
+      gap: 16px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.user {
+      flex-direction: row-reverse;
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .message.user .avatar {
+      background: #4f46e5;
+      color: white;
+    }
+
+    .message.assistant .avatar {
+      background: var(--accent-gradient);
+      color: white;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+    }
+
+    .bubble {
+      max-width: 80%;
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 16px 20px;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .message.user .bubble {
+      background: #3730a3;
+      border-color: rgba(99, 102, 241, 0.4);
+      color: white;
+      border-top-right-radius: 2px;
+    }
+
+    .message.assistant .bubble {
+      border-top-left-radius: 2px;
+    }
+
+    .bubble table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      font-size: 13px;
+    }
+
+    .bubble th, .bubble td {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 8px 12px;
+      text-align: left;
+    }
+
+    .bubble th {
+      background-color: rgba(56, 189, 248, 0.15);
+      color: var(--accent-primary);
+    }
+
+    .citations-container {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .citation-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      width: 100%;
+
+    }
+
+    .citation-badge {
+      font-size: 11px;
+      background: rgba(56, 189, 248, 0.1);
+      color: #7dd3fc;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      padding: 4px 10px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Input Footer Area */
+    .input-footer {
+      padding: 20px 32px 24px;
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .input-box {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      transition: border-color 0.2s;
+    }
+
+    .input-box:focus-within {
+      border-color: var(--accent-primary);
+    }
+
+    .input-box textarea {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-main);
+      font-size: 14px;
+      resize: none;
+      height: 44px;
+      max-height: 120px;
+      outline: none;
+      padding: 10px 0;
+    }
+
+    .btn-send {
+      width: 38px;
+      height: 38px;
+      background: var(--accent-gradient);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-send:hover {
+      transform: scale(1.05);
+    }
+
+    .disclaimer {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-logo"><i class="fa-solid fa-scale-balanced"></i></div>
+      <div>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span class="brand-title">GSTGPT</span>
+          <span class="brand-badge">v3.0 RAG</span>
+        </div>
+        <div style="font-size: 11px; color: var(--text-muted);">Indian Tax Legal AI</div>
+      </div>
+    </div>
+
+    <button class="btn-new-chat" onclick="startNewChat()">
+      <i class="fa-solid fa-plus"></i> New Conversation
+    </button>
+
+    <div class="stats-card">
+      <i class="fa-solid fa-database stats-icon"></i>
+      <div class="stats-info">
+        <div>Knowledge Base</div>
+        <div id="record-count">1,264 Gazette PDFs</div>
+      </div>
+    </div>
+
+    <div class="history-label">Recent Searches</div>
+    <div class="history-list">
+      <div class="history-item active">
+        <i class="fa-regular fa-message"></i>
+        <span>Section 50(1) Interest Rates</span>
+      </div>
+      <div class="history-item">
+        <i class="fa-regular fa-message"></i>
+        <span>Notification 8/2017 Composition</span>
+      </div>
+      <div class="history-item">
+        <i class="fa-regular fa-message"></i>
+        <span>500 Cr E-invoicing Rule</span>
+      </div>
+      <div class="history-item">
+        <i class="fa-regular fa-message"></i>
+        <span>Rule 36(4) ITC Restrictions</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Chat Workspace -->
+  <main class="chat-container">
+    <header class="chat-header">
+      <div class="header-info">
+        <div class="status-dot"></div>
+        <div>
+          <h2>CBIC Grounded Legal Intelligence Engine</h2>
+          <div style="font-size: 11px; color: var(--text-muted);">Hybrid BM25 + Vector + Cross-Encoder Re-Ranker</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Welcome Screen -->
+    <div class="welcome-screen" id="welcome-screen">
+      <div class="welcome-icon">
+        <i class="fa-solid fa-gavel"></i>
+      </div>
+      <h1>How can GSTGPT assist your tax query today?</h1>
+      <p>Ask any legal or procedural GST question. Answers are derived directly from official CBIC Gazette Notifications.</p>
+
+      <div class="suggestion-grid">
+        <div class="suggestion-card" onclick="sendSuggested('What was the initial turnover limit in Notification No. 8/2017 for Composition Scheme?')">
+          <div class="card-title">📜 Composition Scheme</div>
+          <div class="card-desc">What was the initial turnover limit in Notification No. 8/2017?</div>
+        </div>
+        <div class="suggestion-card" onclick="sendSuggested('Which notification in March 2019 overhauled GST rates for real estate projects?')">
+          <div class="card-title">🏢 Real Estate Overhaul</div>
+          <div class="card-desc">Which 2019 notification revised residential real estate tax rates?</div>
+        </div>
+        <div class="suggestion-card" onclick="sendSuggested('When was 500 Crore e-invoicing made mandatory under Notification 13/2020?')">
+          <div class="card-title">🧾 E-Invoicing Threshold</div>
+          <div class="card-desc">Notification 13/2020 500 Cr aggregate turnover mandate</div>
+        </div>
+        <div class="suggestion-card" onclick="sendSuggested('What are the interest rates fixed under Section 50(1) and Section 50(3)?')">
+          <div class="card-title">⚖️ Interest Rates</div>
+          <div class="card-desc">Notification 13/2017 interest rates for delayed payment vs wrongful ITC</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Messages Stream -->
+    <div class="messages-stream" id="messages-stream" style="display: none;"></div>
+
+    <!-- Footer Input -->
+    <div class="input-footer">
+      <div class="input-box">
+        <textarea id="user-input" placeholder="Type your GST query (e.g. Notification 78/2020 HSN digits or 500 cr e-invoicing)..." onkeydown="handleKeyDown(event)"></textarea>
+        <button class="btn-send" onclick="sendMessage()">
+          <i class="fa-solid fa-paper-plane"></i>
+        </button>
+      </div>
+      <div class="disclaimer">
+        🔒 Responses are synthesized directly from verified official Gazette Notifications.
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const API_URL = '/api/chat';
+
+    function handleKeyDown(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    }
+
+    function sendSuggested(text) {
+      document.getElementById('user-input').value = text;
+      sendMessage();
+    }
+
+    function startNewChat() {
+      document.getElementById('messages-stream').innerHTML = '';
+      document.getElementById('messages-stream').style.display = 'none';
+      document.getElementById('welcome-screen').style.display = 'flex';
+      document.getElementById('user-input').value = '';
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('user-input');
+      const text = input.value.strip ? input.value.strip() : input.value.trim();
+      if (!text) return;
+
+      // Hide welcome screen
+      document.getElementById('welcome-screen').style.display = 'none';
+      const stream = document.getElementById('messages-stream');
+      stream.style.display = 'flex';
+
+      // Append User Message
+      appendMessage('user', text);
+      input.value = '';
+
+      // Append Loading Assistant Message
+      const loadingId = 'loading-' + Date.now();
+      appendLoadingMessage(loadingId);
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text })
+        });
+        const data = await res.json();
+        
+        // Remove loading
+        document.getElementById(loadingId).remove();
+
+        // Append AI Assistant Message
+        appendMessage('assistant', data.reply, data.citations);
+
+      } catch (err) {
+        document.getElementById(loadingId).remove();
+        appendMessage('assistant', '⚠️ Error connecting to GSTGPT API server. Please check backend status.');
+      }
+    }
+
+    function appendMessage(role, content, citations = []) {
+      const stream = document.getElementById('messages-stream');
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `message ${role}`;
+
+      const avatar = document.createElement('div');
+      avatar.className = 'avatar';
+      avatar.innerHTML = role === 'user' ? '<i class="fa-solid fa-user"></i>' : '<i class="fa-solid fa-scale-balanced"></i>';
+
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      
+      // Parse markdown
+      bubble.innerHTML = marked.parse(content);
+
+      // Add Citations if present
+      if (citations && citations.length > 0) {
+        const citationDiv = document.createElement('div');
+        citationDiv.className = 'citations-container';
+        citationDiv.innerHTML = '<div class="citation-label">📄 Official CBIC Sources Verified:</div>';
+
+        citations.forEach(c => {
+          const badge = document.createElement('span');
+          badge.className = 'citation-badge';
+          badge.innerHTML = `<i class="fa-solid fa-file-pdf"></i> ${c.filename} (${c.year})`;
+          citationDiv.appendChild(badge);
+        });
+
+        bubble.appendChild(citationDiv);
+      }
+
+      msgDiv.appendChild(avatar);
+      msgDiv.appendChild(bubble);
+      stream.appendChild(msgDiv);
+      stream.scrollTop = stream.scrollHeight;
+    }
+
+    function appendLoadingMessage(id) {
+      const stream = document.getElementById('messages-stream');
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'message assistant';
+      msgDiv.id = id;
+
+      msgDiv.innerHTML = `
+        <div class="avatar"><i class="fa-solid fa-scale-balanced"></i></div>
+        <div class="bubble">
+          <i class="fa-solid fa-circle-notch fa-spin"></i> Executing Hybrid RAG Search & Citations Verification...
+        </div>
+      `;
+      stream.appendChild(msgDiv);
+      stream.scrollTop = stream.scrollHeight;
+    }
+  </script>
+</body>
+</html>

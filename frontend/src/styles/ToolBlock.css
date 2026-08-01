@@ -1,0 +1,72 @@
+.tool-detail-card {
+  margin-top: 14px;
+  padding: 16px 24px;
+  border: 1px solid rgb(222, 222, 222);
+  border-radius: 18px;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.tool-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.tool-detail-title {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+}
+
+.tool-detail-server {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgb(105, 105, 105);
+}
+
+.tool-detail-name {
+  font-size: 14px;
+  font-weight: 650;
+  color: rgb(28, 28, 28);
+  word-break: break-word;
+}
+
+.tool-detail-status {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgb(95, 95, 95);
+}
+
+.tool-detail-status.error {
+  color: rgb(200, 55, 55);
+}
+
+.tool-detail-result {
+  max-height: 200px;
+  margin: 0;
+  padding: 14px 16px;
+  border: 0;
+  border-radius: 10px;
+  background: rgb(247, 247, 247);
+  color: rgb(70, 70, 70);
+  font-size: 12.5px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow: auto;
+}
+
+.tool-detail-result::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.tool-detail-result::-webkit-scrollbar-thumb {
+  background: rgb(225, 225, 225);
+  border-radius: 999px;
+}

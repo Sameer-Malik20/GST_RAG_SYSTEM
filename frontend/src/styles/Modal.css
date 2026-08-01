@@ -1,0 +1,102 @@
+/* Modal Overlay & Card Container */
+.modal-overlay {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 20px;
+    background-color: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    box-sizing: border-box;
+}
+
+.modal-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 400px;
+    padding: 28px 24px;
+    background: #ffffff;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2), 0 4px 16px rgba(0, 0, 0, 0.05);
+    box-sizing: border-box;
+    text-align: center;
+}
+
+/* Modal Title / Message */
+.modal-message {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.5;
+    color: #1e293b;
+    margin: 0 0 20px 0;
+    word-break: break-word;
+}
+
+/* Action Buttons Container */
+.modal-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+}
+
+/* Base Modal Button */
+.modal-btn {
+    flex: 1;
+    padding: 12px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 12px;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    text-align: center;
+    font-family: inherit;
+}
+
+/* Cancel Button */
+.modal-btn.cancel {
+    background-color: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+
+.modal-btn.cancel:hover {
+    background-color: #e2e8f0;
+    color: #0f172a;
+}
+
+/* Confirm / Action Button - Black & White Theme */
+.modal-btn.confirm {
+    background-color: #0f172a;
+    color: #ffffff;
+    border: 1px solid #0f172a;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+}
+
+.modal-btn.confirm:hover {
+    background-color: #1e293b;
+    border-color: #1e293b;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.3);
+    transform: translateY(-1px);
+}
+
+@media (max-width: 480px) {
+    .modal-content {
+        padding: 24px 20px;
+        border-radius: 16px;
+    }
+}

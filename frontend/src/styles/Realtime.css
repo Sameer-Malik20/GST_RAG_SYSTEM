@@ -1,0 +1,126 @@
+.realtime-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    background: white;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.realtime-models-icon {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 24px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    z-index: 1001;
+}
+
+.realtime-models-icon:hover {
+    background-color: rgba(245, 245, 245);
+}
+
+.model-item.male {
+    color: rgb(50, 120, 220);
+}
+
+.model-item.female {
+    color: rgb(220, 60, 140);
+}
+
+.black-circle {
+    width: 80px;
+    height: 80px;
+    background-color: black;
+    border-radius: 50%;
+}
+
+.orb-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 230px;
+    margin-bottom: 60px;
+    transition: transform 0.3s ease-out;
+}
+
+.bottom-ui-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: fixed;
+    bottom: 4%;
+    gap: 30px;
+    pointer-events: none;
+}
+
+.transcript-container {
+    width: min(70%, 600px);
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    line-height: 1.4;
+    color: rgb(120, 120, 120);
+    pointer-events: none;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    line-clamp: 4;
+    -webkit-line-clamp: 4;
+    overflow: hidden;
+}
+
+.realtime-function-container {
+    display: flex;
+    flex-direction: row;
+    gap: 18px;
+    pointer-events: auto;
+}
+
+.realtime-function {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 60px;
+    height: 60px;
+    font-size: 25px;
+    background-color: rgba(242, 242, 242);
+    transition: background-color 0.3s;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.realtime-function:hover {
+    background-color: rgba(229, 229, 229);
+}
+
+.realtime-function.mic-disabled {
+    color: rgb(230, 55, 55);
+}
+
+
+@media (max-width: 768px) {
+    .realtime-models-icon {
+        top: 15px;
+        right: 10px;
+    }
+
+    .bottom-ui-container {
+        gap: 20px;
+    }
+}
