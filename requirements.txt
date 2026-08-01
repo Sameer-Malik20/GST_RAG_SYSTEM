@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+pydantic
+sentence-transformers
+rank-bm25
+chromadb
+ddgs
+curl_cffi
+groq
+httpx
