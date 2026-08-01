@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect, useMemo, useCallback } from "react";
+import { getFastApiUrl } from "../config";
  
 export const SettingsContext = createContext();
 
@@ -216,10 +217,11 @@ export const SettingsProvider = ({ children }) => {
   useEffect(() => {
     const fetchModels = async () => {
       try {
+        const baseUrl = getFastApiUrl();
         const [modelsRes, imageModelsRes, realtimeModelsRes] = await Promise.all([
-          fetch(`${process.env.REACT_APP_FASTAPI_URL}/chat_models`, { credentials: "include" }),
-          fetch(`${process.env.REACT_APP_FASTAPI_URL}/image_models`, { credentials: "include" }),
-          fetch(`${process.env.REACT_APP_FASTAPI_URL}/realtime_models`, { credentials: "include" })
+          fetch(`${baseUrl}/chat_models`, { credentials: "include" }),
+          fetch(`${baseUrl}/image_models`, { credentials: "include" }),
+          fetch(`${baseUrl}/realtime_models`, { credentials: "include" })
         ]);
         if (!modelsRes.ok || !imageModelsRes.ok || !realtimeModelsRes.ok) {
           setModels([]);

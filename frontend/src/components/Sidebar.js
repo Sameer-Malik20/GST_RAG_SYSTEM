@@ -10,6 +10,7 @@ import Modal from "./Modal";
 import { useToast } from "../contexts/ToastContext";
 import SearchModal from "./SearchModal";
 import BrandLogo from "./BrandLogo";
+import { getApiUrl } from "../config";
 import "../styles/Sidebar.css";
 
 
@@ -219,7 +220,7 @@ function Sidebar({
         ...(token ? { 'Authorization': `Bearer ${token}` } : {})
       };
 
-      const res = await fetch(`${process.env.REACT_APP_FASTAPI_URL}/conversation/${conversation_id}/star`, {
+      const res = await fetch(`${getApiUrl()}/conversation/${conversation_id}/star`, {
         method: 'PUT',
         credentials: 'include',
         headers,
@@ -316,7 +317,7 @@ function Sidebar({
         ...(token ? { 'Authorization': `Bearer ${token}` } : {})
       };
 
-      const res = await fetch(`${process.env.REACT_APP_FASTAPI_URL}/conversation/${conversation_id}/rename`, {
+      const res = await fetch(`${getApiUrl()}/conversation/${conversation_id}/rename`, {
         method: 'PUT',
         credentials: 'include',
         headers,
@@ -343,7 +344,7 @@ function Sidebar({
       const token = localStorage.getItem("samrag_auth_token");
       const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
 
-      const res = await fetch(`${process.env.REACT_APP_FASTAPI_URL}/conversation/${conversation_id}`, {
+      const res = await fetch(`${getApiUrl()}/conversation/${conversation_id}`, {
         method: 'DELETE',
         credentials: 'include',
         headers
@@ -380,7 +381,7 @@ function Sidebar({
     if (modalAction === "logout") {
       try {
         {
-          const res = await fetch(`${process.env.REACT_APP_FASTAPI_URL}/logout`, {
+          const res = await fetch(`${getApiUrl()}/logout`, {
             method: 'POST',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },

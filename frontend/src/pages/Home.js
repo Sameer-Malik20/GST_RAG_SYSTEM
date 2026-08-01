@@ -9,6 +9,8 @@ import { useToast } from "../contexts/ToastContext";
 import InputContainer from "../components/InputContainer";
 import "../styles/Common.css";
 
+import { getFastApiUrl } from "../config";
+
 function Home({ isTouch, userInfo }) {
   const navigate = useNavigate();
   const [inputText, setInputText] = useState("");
@@ -91,7 +93,7 @@ function Home({ isTouch, userInfo }) {
           ...(token ? { "Authorization": `Bearer ${token}` } : {})
         };
 
-        const res = await fetch(`${process.env.REACT_APP_FASTAPI_URL}/chat/new_conversation`, {
+        const res = await fetch(`${getFastApiUrl()}/chat/new_conversation`, {
           method: "POST",
           credentials: "include",
           signal: controller.signal,

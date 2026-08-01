@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { LuMic, LuMicOff, LuPhoneOff } from 'react-icons/lu';
 import { useToast } from '../contexts/ToastContext';
+import { getFastApiUrl } from '../config';
 import '../styles/Realtime.css';
 
 function Realtime() {
@@ -116,7 +117,7 @@ function Realtime() {
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
 
-      const sdpResponse = await fetch(`${process.env.REACT_APP_FASTAPI_URL}/realtime/session`, {
+      const sdpResponse = await fetch(`${getFastApiUrl()}/realtime/session`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sdp: offer.sdp }),

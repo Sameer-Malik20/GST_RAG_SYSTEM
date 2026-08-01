@@ -12,6 +12,7 @@ import Message from "../components/Message";
 import Modal from "../components/Modal";
 import { useToast } from "../contexts/ToastContext";
 import StatusBlock from "../components/StatusBlock";
+import { getFastApiUrl } from "../config";
 import "../styles/Common.css";
 
 function Chat({ isTouch, chatMessageRef }) {
@@ -140,7 +141,7 @@ function Chat({ isTouch, chatMessageRef }) {
     setIsRemoteStreaming(true);
     pollIntervalRef.current = setInterval(async () => {
       try {
-        const pollRes = await fetch(`${process.env.REACT_APP_FASTAPI_URL}/chat/conversation/${conversation_id}`, {
+        const pollRes = await fetch(`${getFastApiUrl()}/chat/conversation/${conversation_id}`, {
           credentials: "include"
         });
         if (!pollRes.ok) {
@@ -194,7 +195,7 @@ function Chat({ isTouch, chatMessageRef }) {
               };
 
               const aliasResponse = await fetch(
-                `${process.env.REACT_APP_FASTAPI_URL}/chat/get_alias`,
+                `${getFastApiUrl()}/chat/get_alias`,
                 {
                   method: "POST",
                   headers,
@@ -227,7 +228,7 @@ function Chat({ isTouch, chatMessageRef }) {
           const token = localStorage.getItem("samrag_auth_token");
           const headers = token ? { "Authorization": `Bearer ${token}` } : {};
 
-          const res = await fetch(`${process.env.REACT_APP_FASTAPI_URL}/chat/conversation/${conversation_id}`, {
+          const res = await fetch(`${getFastApiUrl()}/chat/conversation/${conversation_id}`, {
             credentials: "include",
             headers
           });
@@ -357,7 +358,7 @@ function Chat({ isTouch, chatMessageRef }) {
         };
 
         const response = await fetch(
-          `${process.env.REACT_APP_FASTAPI_URL}${selectedModel.endpoint}`,
+          `${getFastApiUrl()}${selectedModel.endpoint}`,
           {
             method: "POST",
             headers,
@@ -468,7 +469,7 @@ function Chat({ isTouch, chatMessageRef }) {
       });
 
       try {
-        const res = await fetch(`${process.env.REACT_APP_FASTAPI_URL}/conversation/${conversation_id}/${startIndex}`, {
+        const res = await fetch(`${getFastApiUrl()}/conversation/${conversation_id}/${startIndex}`, {
           method: "DELETE",
           credentials: "include"
         });

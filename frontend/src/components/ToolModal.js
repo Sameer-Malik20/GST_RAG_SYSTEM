@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { LuCheck, LuSearch, LuGlobe, LuLayers } from 'react-icons/lu';
+import { getFastApiUrl } from '../config';
 import '../styles/ToolModal.css';
 
 function ToolModal({ isVisible, onClose, activeTools = [], onSave }) {
@@ -14,7 +15,7 @@ function ToolModal({ isVisible, onClose, activeTools = [], onSave }) {
     const fetchMcpServers = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${process.env.REACT_APP_FASTAPI_URL}/mcp-servers`, {
+        const response = await fetch(`${getFastApiUrl()}/mcp-servers`, {
           credentials: "include"
         });
         if (!response.ok) throw new Error('Failed to load server list.');

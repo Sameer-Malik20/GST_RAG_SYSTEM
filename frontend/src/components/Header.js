@@ -8,6 +8,7 @@ import BrandLogo from "./BrandLogo";
 
 import Tooltip from "./Tooltip";
 import { useToast } from "../contexts/ToastContext";
+import { getFastApiUrl } from "../config";
 import "../styles/Header.css";
 
 function Header({ toggleSidebar, isSidebarOpen, isTouch }) {
@@ -83,7 +84,7 @@ function Header({ toggleSidebar, isSidebarOpen, isTouch }) {
         throw new Error("Shared conversation not found.");
       }
 
-      const res = await fetch(`${process.env.REACT_APP_FASTAPI_URL}/share/new_share`, {
+      const res = await fetch(`${getFastApiUrl()}/share/new_share`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },

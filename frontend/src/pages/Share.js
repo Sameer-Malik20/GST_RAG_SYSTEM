@@ -4,6 +4,7 @@ import { LuArrowDown } from "react-icons/lu";
 import Message from '../components/Message';
 import { PulseLoader } from "react-spinners";
 import { motion } from "framer-motion";
+import { getFastApiUrl } from '../config';
 import '../styles/Common.css';
 
 function Share({ isTouch }) {
@@ -19,7 +20,7 @@ function Share({ isTouch }) {
     const fetchConversationData = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`${process.env.REACT_APP_FASTAPI_URL}/share/${share_id}`);
+        const res = await fetch(`${getFastApiUrl()}/share/${share_id}`);
 
         if (!res.ok) {
           const errorModal = res.status === 404 ? "Shared conversation not found." : "Failed to load shared conversation.";

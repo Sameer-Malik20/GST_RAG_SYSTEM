@@ -4,7 +4,9 @@ import { PulseLoader } from 'react-spinners';
 import { motion, AnimatePresence } from 'framer-motion';
 import '../styles/Admin.css';
 
-const API = process.env.REACT_APP_FASTAPI_URL || 'http://localhost:5000/api';
+import { getApiUrl } from '../config';
+
+const API = getApiUrl();
 
 function getAuthHeaders() {
   const token = localStorage.getItem('samrag_auth_token');

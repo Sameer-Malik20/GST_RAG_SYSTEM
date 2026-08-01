@@ -7,6 +7,7 @@ import { ConversationsContext } from "../contexts/ConversationsContext";
 import { useFileUpload } from "../utils/useFileUpload";
 import { useToast } from "../contexts/ToastContext";
 import InputContainer from "../components/InputContainer";
+import { getFastApiUrl } from "../config";
 import "../styles/Common.css";
 
 function ImageHome({ isTouch, userInfo }) {
@@ -88,7 +89,7 @@ function ImageHome({ isTouch, userInfo }) {
         const controller = new AbortController();
         abortControllerRef.current = controller;
 
-        const res = await fetch(`${process.env.REACT_APP_FASTAPI_URL}/image/new_conversation`, {
+        const res = await fetch(`${getFastApiUrl()}/image/new_conversation`, {
           method: "POST",
           credentials: "include",
           signal: controller.signal,

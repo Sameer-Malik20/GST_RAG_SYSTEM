@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect, useCallback } from 'react';
+import { getApiUrl } from '../config';
 
 export const ConversationsContext = createContext();
 
@@ -13,7 +14,8 @@ export const ConversationsProvider = ({ children }) => {
       const token = localStorage.getItem("samrag_auth_token");
       const headers = token ? { "Authorization": `Bearer ${token}` } : {};
 
-      const response = await fetch(`${process.env.REACT_APP_FASTAPI_URL}/conversations`, {
+      const baseUrl = getApiUrl();
+      const response = await fetch(`${baseUrl}/conversations`, {
         credentials: "include",
         headers
       });

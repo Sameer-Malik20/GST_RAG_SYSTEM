@@ -4,6 +4,7 @@ import { LuArrowDown } from "react-icons/lu";
 import Message from '../components/Message';
 import { PulseLoader } from "react-spinners";
 import { motion } from "framer-motion";
+import { getFastApiUrl } from '../config';
 import '../styles/Common.css';
 
 function View({ isTouch }) {
@@ -19,7 +20,7 @@ function View({ isTouch }) {
     const fetchConversationData = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`${process.env.REACT_APP_FASTAPI_URL}/view/${conversation_id}`, {
+        const res = await fetch(`${getFastApiUrl()}/view/${conversation_id}`, {
           credentials: "include"
         });
 

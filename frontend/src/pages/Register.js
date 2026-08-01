@@ -6,6 +6,8 @@ import Modal from "../components/Modal";
 import BrandLogo from "../components/BrandLogo";
 import "../styles/Auth.css";
 
+import { getApiUrl } from "../config";
+
 function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -40,8 +42,8 @@ function Register() {
     setIsLoading(true);
 
     try {
-      const baseUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
-      const res = await fetch(`${baseUrl}/api/auth/register`, {
+      const baseUrl = getApiUrl();
+      const res = await fetch(`${baseUrl}/auth/register`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },

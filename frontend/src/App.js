@@ -18,6 +18,7 @@ import { SettingsProvider } from "./contexts/SettingsContext";
 import { SettingsContext } from "./contexts/SettingsContext";
 import { ConversationsProvider, ConversationsContext } from "./contexts/ConversationsContext";
 import { ToastProvider } from "./contexts/ToastContext";
+import { getApiUrl } from "./config";
 
 function App() {
   return (
@@ -100,7 +101,8 @@ function AppContent() {
         const token = localStorage.getItem("samrag_auth_token");
         const headers = token ? { "Authorization": `Bearer ${token}` } : {};
 
-        const statusRes = await fetch(`${process.env.REACT_APP_FASTAPI_URL}/auth/status`, {
+        const baseUrl = getApiUrl();
+        const statusRes = await fetch(`${baseUrl}/auth/status`, {
           credentials: "include",
           headers
         });
@@ -115,7 +117,7 @@ function AppContent() {
         if (statusData.logged_in) {
           fetchConversations();
           try {
-            const userRes = await fetch(`${process.env.REACT_APP_FASTAPI_URL}/auth/user`, {
+            const userRes = await fetch(`${baseUrl}/auth/user`, {
               credentials: "include",
               headers
             });

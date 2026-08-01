@@ -1,6 +1,7 @@
 import { useState, useCallback, useContext } from 'react';
 import { SettingsContext } from '../contexts/SettingsContext';
 import { useToast } from '../contexts/ToastContext';
+import { getFastApiUrl } from '../config';
 
 export function useFileUpload(initialFiles = [], allowedFormats = null, mode = "default") {
   const [uploadedFiles, setUploadedFiles] = useState(initialFiles);
@@ -57,7 +58,7 @@ export function useFileUpload(initialFiles = [], allowedFormats = null, mode = "
         formData.append('file', file);
 
         const endpoint = file.type.startsWith('image/') ? '/upload/image' : '/upload/file';
-        const response = await fetch(`${process.env.REACT_APP_FASTAPI_URL}${endpoint}`, {
+        const response = await fetch(`${getFastApiUrl()}${endpoint}`, {
           method: 'POST',
           credentials: 'include',
           body: formData

@@ -4,6 +4,7 @@ import { GoCopy, GoCheck, GoPencil, GoTrash, GoSync } from "react-icons/go";
 import { FiAlertTriangle } from "react-icons/fi";
 import { motion } from "framer-motion";
 import { MarkdownRenderer } from "./MarkdownRenderers";
+import { getFastApiUrl } from "../config";
 import "../styles/Message.css";
 import "../styles/FileTile.css";
 import "katex/dist/katex.min.css";
@@ -102,7 +103,7 @@ function Message({
               return (
                 <a
                   key={idx}
-                  href={item.file_path ? `${process.env.REACT_APP_FASTAPI_URL}${item.file_path}` : undefined}
+                  href={item.file_path ? `${getFastApiUrl()}${item.file_path}` : undefined}
                   className={`file-object ${item.file_path ? 'downloadable' : ''}`}
                 >
                   <span className="file-name">{item.name}</span>
@@ -114,7 +115,7 @@ function Message({
               return (
                 <div key={idx} className="file-object image">
                   <img
-                    src={`${process.env.REACT_APP_FASTAPI_URL}${item.content}`}
+                    src={`${getFastApiUrl()}${item.content}`}
                     alt={item.name}
                   />
                 </div>
@@ -187,7 +188,7 @@ function Message({
           <div className="message-file-area">
             <div className="image-object">
               <img
-                src={`${process.env.REACT_APP_FASTAPI_URL}${content.content}`}
+                src={`${getFastApiUrl()}${content.content}`}
                 alt={content.name}
               />
             </div>

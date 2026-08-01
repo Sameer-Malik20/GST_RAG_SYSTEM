@@ -17,6 +17,7 @@ import ToolModal from "./ToolModal";
 import ThinkingDropdown from "./ThinkingDropdown";
 import { SettingsContext } from "../contexts/SettingsContext";
 import { useToast } from "../contexts/ToastContext";
+import { getFastApiUrl } from "../config";
 import "../styles/InputContainer.css";
 import "../styles/FileTile.css";
 
@@ -105,7 +106,7 @@ function InputContainer({
         if (res && res.ok) {
           if (isMounted) setIsRagOnline(true);
         } else {
-          const fallbackRes = await fetch(`${process.env.REACT_APP_FASTAPI_URL}/stats`, {
+          const fallbackRes = await fetch(`${getFastApiUrl()}/stats`, {
             signal: controller.signal
           }).catch(() => null);
           if (fallbackRes && fallbackRes.ok) {
@@ -263,7 +264,7 @@ function InputContainer({
                 >
                   {file.type === "image" ? (
                     <img
-                      src={file.preview || `${process.env.REACT_APP_FASTAPI_URL}${file.content}`}
+                      src={file.preview || `${getFastApiUrl()}${file.content}`}
                       alt={file.name}
                     />
                   ) : (

@@ -5,6 +5,8 @@ import { useToast } from "../contexts/ToastContext";
 import BrandLogo from "../components/BrandLogo";
 import "../styles/Auth.css";
 
+import { getApiUrl } from "../config";
+
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -47,8 +49,8 @@ function Login() {
     setIsLoading(true);
 
     try {
-      const baseUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
-      const res = await fetch(`${baseUrl}/api/auth/login`, {
+      const baseUrl = getApiUrl();
+      const res = await fetch(`${baseUrl}/auth/login`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
