@@ -12,6 +12,19 @@ It combines a **Hybrid Lexical-Dense RAG Pipeline**, **Regex-Powered Entity Extr
 
 ---
 
+## 📸 Screenshots
+
+<div align="center">
+  <img src="screenshots/Screenshot%202026-08-08%20110238.png" width="45%" alt="Screenshot 1"/>
+  <img src="screenshots/Screenshot%202026-08-08%20110257.png" width="45%" alt="Screenshot 2"/>
+  <img src="screenshots/Screenshot%202026-08-08%20110315.png" width="45%" alt="Screenshot 3"/>
+  <img src="screenshots/Screenshot%202026-08-08%20110334.png" width="45%" alt="Screenshot 4"/>
+  <img src="screenshots/Screenshot%202026-08-08%20110344.png" width="45%" alt="Screenshot 5"/>
+  <img src="screenshots/Screenshot%202026-08-08%20110409.png" width="45%" alt="Screenshot 6"/>
+</div>
+
+---
+
 ## 🏗️ System Architecture & Full-Stack Flow
 
 ```
